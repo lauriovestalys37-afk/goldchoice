@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Goldchoice : galerie de photos de Madagascar avec votes et sondages.">
+<title>Goldchoice</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Concept : une vitrine de photos de Madagascar où le public vote, avec des espaces publicitaires et une page de pistes de revenus. */
+:root{
+  --bg:#f1f6f3;
+  --surface:#ffffff;
+  --ink:#12302f;
+  --muted:#58726f;
+  --line:#d3e0db;
+  --soft:#e2eee8;
+  --accent:#cf3b2c;
+  --accent-ink:#ffffff;
+  --green:#1c7a52;
+  --font-display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --font-body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1d1c;--surface:#16292a;--ink:#e6f1ee;--muted:#93aeab;--line:#27403f;--soft:#1d3433;
+    --accent:#ef6a5a;--accent-ink:#1a0d0b;--green:#4cc58d;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1d1c;--surface:#16292a;--ink:#e6f1ee;--muted:#93aeab;--line:#27403f;--soft:#1d3433;
+  --accent:#ef6a5a;--accent-ink:#1a0d0b;--green:#4cc58d;color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 48px;
+}
+.wrap{max-width:1040px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-display);line-height:1.1;text-wrap:balance;margin:0}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;padding-block:20px 12px}
+.brand{font-family:var(--font-display);font-weight:800;font-size:1.7rem;letter-spacing:-.02em}
+.brand span{color:var(--accent)}
+.flagbar{display:flex;height:6px;border-radius:3px;overflow:hidden;width:72px;margin-top:6px}
+.flagbar i{flex:1}
+.flagbar i:nth-child(1){background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.flagbar i:nth-child(2){background:#cf3b2c}
+.flagbar i:nth-child(3){background:#1c7a52}
+nav.tabs{display:flex;gap:4px;background:var(--soft);padding:4px;border-radius:12px;flex-wrap:wrap}
+nav.tabs a{padding:8px 14px;border-radius:9px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.95rem}
+nav.tabs a[aria-current="page"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+.intro{padding-block:20px 8px;display:grid;gap:8px}
+.intro h1{font-size:clamp(1.9rem,5vw,3rem);font-weight:800;letter-spacing:-.03em}
+.intro p{color:var(--muted);max-width:60ch}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-block:20px 14px}
+.toolbar .left{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select,input[type=text],textarea{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-width:0}
+textarea{width:100%;min-height:92px;resize:vertical}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer}
+.btn.accent{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:hover{filter:brightness(1.08)}
+
+.leader{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.leader .pic{aspect-ratio:4/3;max-width:100%;background-size:cover;background-position:center;border:0;cursor:zoom-in;padding:0}
+.leader .info{padding:20px;display:flex;flex-direction:column;gap:10px;justify-content:center;min-width:0}
+.leader .kicker{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--green);font-weight:700}
+.leader h2{font-size:1.6rem}
+.leader .meta{color:var(--muted)}
+@media (max-width:640px){.leader{grid-template-columns:1fr}}
+
+.ad{border:1.5px dashed var(--line);background:var(--soft);border-radius:12px;display:grid;place-items:center;text-align:center;padding:14px;color:var(--muted);font-size:.85rem;margin-block:22px}
+.ad b{display:block;color:var(--ink);font-family:var(--font-display);font-size:1rem}
+.ad.banner{min-height:90px}
+.ad.rect{min-height:250px;max-width:340px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;margin:0;min-width:0}
+.card .thumb{display:block;width:100%;aspect-ratio:4/3;background-size:cover;background-position:center;border:0;padding:0;cursor:zoom-in}
+.card figcaption{padding:12px 14px 14px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.card .t{font-weight:600;line-height:1.25}
+.card .p{color:var(--muted);font-size:.85rem}
+.vote{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:transparent;border-radius:999px;padding:6px 12px;cursor:pointer;font-weight:600;font-variant-numeric:tabular-nums;flex:none}
+.vote svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+.vote[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.vote[aria-pressed="true"] svg{fill:currentColor}
+
+.poll{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:12px;min-width:0}
+.poll h3{font-size:1.25rem}
+.poll .opts{display:grid;gap:8px}
+.opt{text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:500}
+.opt:hover{border-color:var(--accent)}
+.res{position:relative;border-radius:10px;overflow:hidden;background:var(--bg);border:1px solid var(--line);padding:9px 14px;display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.res .bar{position:absolute;inset:0 auto 0 0;background:var(--soft)}
+.res.mine .bar{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.res span{position:relative;min-width:0;overflow-wrap:anywhere}
+.poll .foot{color:var(--muted);font-size:.85rem}
+.polls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.newpoll{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:10px}
+.newpoll label{font-weight:600;font-size:.9rem}
+.newpoll input[type=text]{width:100%}
+
+.cards3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:14px}
+.src{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:6px;align-content:start}
+.src h3{font-size:1.1rem}
+.src p{color:var(--muted);font-size:.93rem}
+.tag{display:inline-block;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--green)}
+.section-h{margin-block:30px 12px;font-size:1.4rem}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.steps label{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer}
+.steps input{margin-top:4px;width:18px;height:18px;accent-color:var(--accent);flex:none}
+.steps small{display:block;color:var(--muted)}
+.note{background:var(--soft);border-radius:12px;padding:14px 16px;color:var(--muted);font-size:.93rem;margin-top:18px}
+
+.lightbox{position:fixed;inset:0;z-index:50;background:rgba(5,12,12,.88);display:grid;place-items:center;padding:20px}
+.lightbox[hidden]{display:none!important}
+.lightbox figure{margin:0;max-width:min(900px,100%);display:grid;gap:10px}
+.lightbox img{width:100%;max-height:75vh;object-fit:contain;border-radius:10px;background:#000}
+.lightbox figcaption{color:#e6f1ee;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.lightbox .x{position:absolute;top:max(14px,env(safe-area-inset-top,0px));right:16px}
+section[hidden]{display:none!important}
+.legal{max-width:68ch;display:grid;gap:8px;margin-top:18px}
+.legal h2{font-size:1.15rem;margin-top:14px}
+.offer-price{font-family:var(--font-display);font-size:1.8rem;font-weight:800;letter-spacing:-.02em}
+.offer-price small{font-size:.9rem;font-weight:600;color:var(--muted);letter-spacing:0}
+.src ul{margin:6px 0 0;padding-left:18px;color:var(--muted);font-size:.93rem}
+.contact-slot,.owner-slot{font-weight:600}
+footer{margin-top:40px;color:var(--muted);font-size:.85rem}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="brand">Gold<span>choice</span></div>
+      <div class="flagbar" aria-hidden="true"><i></i><i></i><i></i></div>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#galerie" data-tab="galerie">Galerie</a>
+      <a href="#sondages" data-tab="sondages">Sondages</a>
+      <a href="#sponsors" data-tab="sponsors">Sponsors</a>
+      <a href="#revenus" data-tab="revenus">Gagner des devises</a>
+    </nav>
+  </header>
+
+  <!-- GALERIE -->
+  <section id="galerie" data-view="galerie">
+    <div class="intro">
+      <h1>Les plus belles photos de Madagascar, choisies par vous</h1>
+      <p>Regardez, votez pour vos préférées et proposez les vôtres. La photo la plus votée passe en tête de la page.</p>
+    </div>
+
+    <div id="leader" class="leader"></div>
+
+    <aside class="ad banner" aria-label="Espace publicitaire"><div><b>Espace publicitaire 728 × 90</b>Bannière à vendre aux hôtels, agences de voyage et marques locales.</div></aside>
+
+    <div class="toolbar">
+      <div class="left">
+        <label for="sort" class="p" style="color:var(--muted)">Trier par</label>
+        <select id="sort">
+          <option value="pop">Plus votées</option>
+          <option value="new">Plus récentes</option>
+        </select>
+      </div>
+      <div>
+        <input id="upload" type="file" accept="image/*" hidden>
+        <button class="btn accent" id="uploadBtn" type="button">Ajouter ma photo</button>
+      </div>
+    </div>
+    <div id="grid" class="grid"></div>
+    <p class="note">Les images de cette démonstration sont des illustrations d'exemple. Les photos que vous ajoutez ici restent dans votre navigateur le temps de la visite.</p>
+  </section>
+
+  <!-- SONDAGES -->
+  <section id="sondages" data-view="sondages" hidden>
+    <div class="intro">
+      <h1>Sondages du moment</h1>
+      <p>Une question, quatre clics. Les résultats s'affichent dès que vous avez voté.</p>
+    </div>
+    <div style="height:18px"></div>
+    <div id="polls" class="polls"></div>
+    <div class="ad rect" aria-label="Espace publicitaire"><div><b>Espace publicitaire 300 × 250</b>Sondage sponsorisé ou encart de marque.</div></div>
+    <form id="pollForm" class="newpoll" autocomplete="off">
+      <h3>Proposer un sondage</h3>
+      <div><label for="pq">Votre question</label><input id="pq" type="text" maxlength="120" placeholder="Quel est votre plat préféré ?" required></div>
+      <div><label for="po">Réponses possibles (une par ligne, 2 à 5)</label><textarea id="po" placeholder="Romazava&#10;Ravitoto&#10;Mofo gasy" required></textarea></div>
+      <div><button class="btn" type="submit">Publier le sondage</button></div>
+      <p id="pollMsg" class="p" style="color:var(--muted);font-size:.9rem" role="status"></p>
+    </form>
+  </section>
+
+  <!-- SPONSORS -->
+  <section id="sponsors" data-view="sponsors" hidden>
+    <div class="intro">
+      <h1>Faites connaître votre marque à notre public</h1>
+      <p>Hôtels, agences de voyage, restaurants, associations et marques locales : parlez à des visiteurs passionnés par Madagascar. Paiement en euros ou en dollars.</p>
+    </div>
+    <div style="height:18px"></div>
+    <div class="cards3" id="offers"></div>
+    <p class="note">Tarifs de départ, négociables selon l'audience du site. Le contenu sponsorisé est toujours indiqué comme tel.</p>
+
+    <form id="reqForm" class="newpoll" autocomplete="off">
+      <h3>Préparer ma demande de partenariat</h3>
+      <div><label for="rname">Nom de votre entreprise ou association</label><input id="rname" type="text" maxlength="80" required></div>
+      <div><label for="roffer">Offre souhaitée</label><select id="roffer" style="width:100%"></select></div>
+      <div><label for="rmsg">Votre message</label><textarea id="rmsg" placeholder="Décrivez en deux phrases ce que vous voulez promouvoir."></textarea></div>
+      <div><button class="btn accent" type="submit">Générer le message</button></div>
+    </form>
+    <div id="reqOut" class="newpoll" hidden>
+      <h3>Votre message est prêt</h3>
+      <textarea id="reqText" readonly></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn" id="reqCopy" type="button">Copier le message</button>
+        <span id="reqCopyMsg" role="status" style="color:var(--muted);font-size:.9rem"></span>
+      </div>
+      <p style="color:var(--muted);font-size:.93rem">Envoyez-le à : <strong id="contactLine"></strong></p>
+    </div>
+  </section>
+
+  <!-- CONFIDENTIALITE -->
+  <section id="confidentialite" data-view="confidentialite" hidden>
+    <div class="intro"><h1>Politique de confidentialité</h1><p>Dernière mise à jour : novembre 2026</p></div>
+    <div class="legal">
+      <h2>Ce que le site enregistre</h2>
+      <p>Goldchoice enregistre dans votre navigateur, sur votre appareil, vos votes et vos réponses aux sondages. Ces informations ne sont pas envoyées à un serveur et ne permettent pas de vous identifier.</p>
+      <h2>Photos que vous ajoutez</h2>
+      <p>Une photo ajoutée reste dans votre navigateur le temps de la visite. N'ajoutez que des photos dont vous êtes l'auteur.</p>
+      <h2>Publicité et cookies</h2>
+      <p>Le site peut afficher de la publicité fournie par des régies publicitaires tierces. Ces partenaires peuvent utiliser des cookies pour afficher des annonces adaptées à votre navigation. Vous pouvez les refuser dans les réglages de votre navigateur.</p>
+      <h2>Liens partenaires</h2>
+      <p>Certains liens vers des boutiques ou des services peuvent nous rapporter une commission si vous achetez, sans changer le prix que vous payez.</p>
+      <h2>Nous contacter</h2>
+      <p>Pour toute question sur vos données : <span class="contact-slot"></span></p>
+    </div>
+  </section>
+
+  <!-- MENTIONS -->
+  <section id="mentions" data-view="mentions" hidden>
+    <div class="intro"><h1>Mentions légales</h1></div>
+    <div class="legal">
+      <h2>Éditeur du site</h2>
+      <p>Goldchoice est édité par <span class="owner-slot"></span>.</p>
+      <h2>Contact</h2>
+      <p><span class="contact-slot"></span></p>
+      <h2>Contenus</h2>
+      <p>Les photos appartiennent à leurs auteurs. Les contenus sponsorisés sont signalés comme tels. Les illustrations de démonstration sont créées pour le site.</p>
+    </div>
+  </section>
+
+  <!-- REVENUS -->
+  <section id="revenus" data-view="revenus" hidden>
+    <div class="intro">
+      <h1>Comment ce site peut rapporter des devises</h1>
+      <p>Le site attire du public, le public attire des annonceurs et des partenaires payés en euros ou en dollars. Voici les pistes, de la plus simple à la plus ambitieuse.</p>
+    </div>
+
+    <h2 class="section-h">Six sources de revenus</h2>
+    <div class="cards3">
+      <div class="src"><span class="tag">Dès quelques milliers de visites</span><h3>Publicité display</h3><p>Google AdSense ou une régie équivalente remplit les espaces publicitaires de la galerie. L'acceptation demande un site avec du contenu original et une page de confidentialité.</p></div>
+      <div class="src"><span class="tag">Dès les premiers visiteurs</span><h3>Sondages sponsorisés</h3><p>Une marque, un hôtel ou une ONG paie pour poser sa question à votre public. Le prix se négocie en dollars ou en euros par sondage.</p></div>
+      <div class="src"><span class="tag">Avec une petite communauté</span><h3>Concours photo parrainé</h3><p>Un sponsor offre le prix, vous gérez les votes. Il paie pour la visibilité pendant un mois.</p></div>
+      <div class="src"><span class="tag">Facile à ajouter</span><h3>Affiliation</h3><p>Liens vers du matériel photo, des guides de voyage ou des réservations. Vous touchez une commission sur chaque achat venu de votre site.</p></div>
+      <div class="src"><span class="tag">Avec du contenu à vous</span><h3>Vente de photos et de tirages</h3><p>Les photos gagnantes (avec l'accord de leurs auteurs) peuvent être vendues sur des banques d'images ou en packs.</p></div>
+      <div class="src"><span class="tag">Plus tard</span><h3>Newsletter et espace premium</h3><p>Une lettre hebdomadaire des meilleures photos, avec un encart sponsor, puis un abonnement pour les passionnés.</p></div>
+    </div>
+
+    <h2 class="section-h">Comment l'argent arrive jusqu'à vous</h2>
+    <div class="cards3">
+      <div class="src"><span class="tag">Sponsors dans le monde entier</span><h3>Compte Payoneer</h3><p>Le sponsor paie sur votre compte en dollars ou en euros, puis vous retirez vers votre banque à Madagascar. Ajoutez le compte bancaire dans les paramètres : la vérification prend en général jusqu'à trois jours ouvrés, puis l'argent arrive en un à trois jours.</p><p>Frais : jusqu'à 2 % si la devise du retrait diffère de celle du compte bancaire, sans frais d'ouverture ni frais mensuels. Les pages de Payoneer ne mentionnent pas Madagascar : testez l'ajout de votre banque avant de promettre ce mode de paiement à un client.</p></div>
+      <div class="src"><span class="tag">Sponsors établis en Europe</span><h3>MVola depuis l'Europe</h3><p>Depuis janvier 2024, la diaspora peut envoyer de l'argent de l'application Orange Money Europe directement vers un compte MVola, en ariary, instantanément et sans frais de réception. Pays concernés à l'époque : Allemagne, Belgique, Espagne, France, Italie, Pays-Bas.</p><p>Pratique pour de petits montants. Vérifiez que le service existe toujours avant de l'indiquer à un client.</p></div>
+      <div class="src"><span class="tag">Montants plus importants</span><h3>Virement bancaire international</h3><p>Le sponsor envoie un virement SWIFT vers votre banque. Donnez-lui votre nom exact, le nom de la banque, le code SWIFT et le numéro de compte, par message privé uniquement. Votre banque ou une banque intermédiaire peut retenir des frais sur le montant reçu.</p></div>
+      <div class="src"><span class="tag">Revenu publicitaire</span><h3>Régie publicitaire</h3><p>Le paiement est versé une fois par mois, quand le solde dépasse le seuil de la régie. Le mode de paiement proposé dépend du pays de votre adresse : regardez la liste dans votre compte avant de compter sur cette source. Une vérification d'adresse par courrier et un formulaire fiscal sont demandés.</p></div>
+    </div>
+
+    <h2 class="section-h">Préparer un devis pour un sponsor</h2>
+    <form id="quoteForm" class="newpoll" autocomplete="off">
+      <div><label for="qclient">Nom du client</label><input id="qclient" type="text" maxlength="80" required></div>
+      <div><label for="qoffer">Offre</label><select id="qoffer" style="width:100%"></select></div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 110px;gap:10px">
+        <div><label for="qprice">Prix</label><input id="qprice" type="text" inputmode="decimal" maxlength="9" required></div>
+        <div><label for="qcur">Devise</label><select id="qcur" style="width:100%"><option>USD</option><option>EUR</option></select></div>
+      </div>
+      <div><label for="qpay">Mode de paiement</label>
+        <select id="qpay" style="width:100%">
+          <option value="Payoneer">Payoneer</option>
+          <option value="Virement bancaire international">Virement bancaire international</option>
+          <option value="MVola (depuis Orange Money Europe)">MVola (depuis Orange Money Europe)</option>
+          <option value="MVola (paiement local, en ariary)">MVola (paiement local, en ariary)</option>
+        </select>
+      </div>
+      <div><label for="qdet">Vos coordonnées de paiement (non enregistrées par le site)</label><input id="qdet" type="text" maxlength="160" placeholder="Adresse e-mail Payoneer, numéro MVola…"></div>
+      <div><button class="btn accent" type="submit">Générer le devis</button></div>
+    </form>
+    <div id="quoteOut" class="newpoll" hidden>
+      <textarea id="quoteText" readonly style="min-height:240px"></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn" id="quoteCopy" type="button">Copier le devis</button>
+        <span id="quoteCopyMsg" role="status" style="color:var(--muted);font-size:.9rem"></span>
+      </div>
+    </div>
+
+    <h2 class="section-h">Votre plan de lancement</h2>
+    <ul class="steps" id="steps"></ul>
+
+    <p class="note">Les revenus dépendent entièrement du nombre de visiteurs et de la régularité de la publication. Au début ils sont faibles, et les conditions de chaque régie publicitaire et de chaque moyen de paiement sont à vérifier avant de s'engager. Ce prototype enregistre les votes dans le navigateur de chaque visiteur. Pour des votes partagés entre tous les visiteurs, il faut ajouter une base de données.</p>
+  </section>
+
+  <footer>Goldchoice, prototype. Les photos d'exemple sont des illustrations.
+    <span style="display:block;margin-top:6px"><a href="#confidentialite" style="color:inherit">Confidentialité</a> · <a href="#mentions" style="color:inherit">Mentions légales</a> · <a href="#sponsors" style="color:inherit">Devenir sponsor</a></span>
+  </footer>
+</div>
+
+<div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Photo en grand">
+  <button class="btn ghost x" id="lbClose" type="button" style="color:#fff;border-color:#ffffff66">Fermer</button>
+  <figure>
+    <img id="lbImg" alt="">
+    <figcaption><span id="lbCap"></span><button class="vote" id="lbVote" type="button" aria-pressed="false" style="color:#fff;border-color:#ffffff66"></button></figcaption>
+  </figure>
+</div>
+
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s)};
+  function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+  var store={
+    get:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+    set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  };
+  function svg(inner){
+    return 'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">'+inner+'</svg>');
+  }
+  function grad(id,stops){
+    return '<defs><linearGradient id="'+id+'" x1="0" y1="0" x2="0" y2="1">'+stops.map(function(s){return '<stop offset="'+s[0]+'" stop-color="'+s[1]+'"/>'}).join('')+'</linearGradient></defs>';
+  }
+  function baobab(x,s,c){
+    return '<g transform="translate('+x+' 0) scale('+s+')" fill="'+c+'"><path d="M-22 230 L-14 120 Q-12 104 0 104 Q12 104 14 120 L22 230Z"/><path d="M-34 108 Q-18 80 -2 100 Q14 76 34 106 Q8 94 -34 108Z"/></g>';
+  }
+  var scenes={
+    baobabs:function(){return svg(grad('a',[[0,'#3b2a6b'],[.55,'#e2554a'],[1,'#f6b042']])+'<rect width="400" height="300" fill="url(#a)"/><circle cx="262" cy="196" r="40" fill="#ffd98a"/><rect y="222" width="400" height="78" fill="#2a1a1f"/>'+baobab(110,1.15,'#170d10')+baobab(300,.8,'#170d10'))},
+    plage:function(){
+      var w='';for(var i=0;i<6;i++){w+='<path d="M0 '+(165+i*10)+' q50 -8 100 0 t100 0 t100 0 t100 0" stroke="#ffffff55" stroke-width="2" fill="none"/>'}
+      return svg(grad('b',[[0,'#7cc8ec'],[1,'#e6f6fb']])+'<rect width="400" height="300" fill="url(#b)"/><rect y="150" width="400" height="90" fill="#1d8fb5"/>'+w+'<path d="M0 232 Q200 214 400 236 V300 H0Z" fill="#f2d99e"/><path d="M90 250 Q104 190 140 130" stroke="#6b4a2b" stroke-width="9" fill="none" stroke-linecap="round"/><g fill="#2f8f4a"><ellipse cx="140" cy="126" rx="42" ry="9" transform="rotate(-20 140 126)"/><ellipse cx="140" cy="126" rx="42" ry="9" transform="rotate(25 140 126)"/><ellipse cx="140" cy="126" rx="38" ry="8" transform="rotate(70 140 126)"/><ellipse cx="140" cy="126" rx="38" ry="8" transform="rotate(-65 140 126)"/></g><circle cx="320" cy="60" r="24" fill="#fff3b8"/>');
+    },
+    rizieres:function(){return svg(grad('c',[[0,'#bfe3f2'],[1,'#f4fbf7']])+'<rect width="400" height="300" fill="url(#c)"/><path d="M0 130 Q100 90 200 120 T400 110 V300 H0Z" fill="#2e7d32"/><path d="M0 160 Q120 120 220 150 T400 140 V300 H0Z" fill="#4c9f3e"/><path d="M0 195 Q130 160 230 185 T400 178 V300 H0Z" fill="#79bd45"/><path d="M0 232 Q140 205 250 225 T400 220 V300 H0Z" fill="#b5d96a"/><rect x="290" y="108" width="26" height="18" fill="#7a4b2a"/><path d="M285 108 L303 92 L321 108Z" fill="#a8452d"/>')},
+    pirogue:function(){return svg(grad('d',[[0,'#f9c9a0'],[.6,'#f7e1c8'],[1,'#9fd0e0']])+'<rect width="400" height="300" fill="url(#d)"/><circle cx="90" cy="120" r="34" fill="#ffe9b5"/><rect y="165" width="400" height="135" fill="#3a8fae"/><path d="M0 190 H400 M0 215 H400 M0 245 H400" stroke="#ffffff40" stroke-width="2"/><path d="M130 200 Q200 232 290 200 L275 214 Q205 240 145 214Z" fill="#3b2a1f"/><path d="M205 200 V108" stroke="#3b2a1f" stroke-width="4"/><path d="M209 112 L262 192 H209Z" fill="#fff"/><path d="M201 124 L160 192 H201Z" fill="#f2f2f2"/>')},
+    tsingy:function(){
+      var p='';var xs=[0,40,80,120,160,200,240,280,320,360];
+      for(var i=0;i<xs.length;i++){var h=70+((i*53)%90);p+='<path d="M'+xs[i]+' 270 L'+(xs[i]+22)+' '+(270-h)+' L'+(xs[i]+44)+' 270Z" fill="'+(i%2?'#78858c':'#5d6a71')+'"/>'}
+      return svg(grad('e',[[0,'#cfd8dc'],[1,'#f4efe6']])+'<rect width="400" height="300" fill="url(#e)"/>'+p+'<rect y="268" width="400" height="32" fill="#3f2f26"/>');
+    },
+    nuit:function(){
+      var s='';for(var i=0;i<46;i++){var x=(i*97)%400,y=(i*61)%170;s+='<circle cx="'+x+'" cy="'+y+'" r="'+(i%5===0?1.8:1)+'" fill="#fff" opacity="'+(0.5+(i%4)*.12)+'"/>'}
+      return svg('<rect width="400" height="300" fill="#0b1b3a"/>'+s+'<circle cx="300" cy="70" r="26" fill="#fff6c9"/><circle cx="310" cy="64" r="24" fill="#0b1b3a"/><path d="M0 230 Q90 180 190 220 T400 210 V300 H0Z" fill="#10262e"/><path d="M0 262 Q120 232 240 258 T400 250 V300 H0Z" fill="#081519"/>'+baobab(90,.7,'#040b0d'));
+    },
+    foret:function(){
+      var t='';for(var i=0;i<14;i++){var x=i*30;t+='<path d="M'+x+' 270 L'+(x+16)+' '+(120+(i*37)%70)+' L'+(x+32)+' 270Z" fill="'+(i%3===0?'#14503a':i%3===1?'#1d6b46':'#0f3d2f')+'"/>'}
+      return svg(grad('f',[[0,'#cfe9d9'],[1,'#7fb99a']])+'<rect width="400" height="300" fill="url(#f)"/>'+t+'<rect y="150" width="400" height="60" fill="#ffffff" opacity=".22"/><rect y="268" width="400" height="32" fill="#2b1f17"/>');
+    },
+    marche:function(){
+      var a='';var cs=['#cf3b2c','#f2b632','#1c7a52','#2b7bb9','#cf3b2c','#f2b632','#1c7a52','#2b7bb9'];
+      for(var i=0;i<8;i++){a+='<path d="M'+(i*50)+' 80 H'+(i*50+50)+' V120 Q'+(i*50+25)+' 138 '+(i*50)+' 120Z" fill="'+cs[i]+'"/>'}
+      var b='';for(var j=0;j<7;j++){b+='<circle cx="'+(30+j*55)+'" cy="214" r="'+(14+(j%3)*3)+'" fill="'+cs[(j+2)%8]+'"/>'}
+      return svg('<rect width="400" height="300" fill="#f3e3c4"/><rect y="0" width="400" height="80" fill="#e8d3a8"/>'+a+'<rect y="236" width="400" height="64" fill="#7a5a3b"/><rect y="196" width="400" height="44" fill="#a47a4d"/>'+b);
+    }
+  };
+  var BASE=[
+    {id:'p1',title:'Baobabs au coucher du soleil',place:'Région de Morondava',scene:'baobabs',votes:184},
+    {id:'p2',title:'Plage et cocotier',place:'Côte est',scene:'plage',votes:121},
+    {id:'p3',title:'Rizières en terrasses',place:'Hautes Terres',scene:'rizieres',votes:156},
+    {id:'p4',title:'Pirogue à l’aube',place:'Lac de l’ouest',scene:'pirogue',votes:97},
+    {id:'p5',title:'Forêt de pierre',place:'Tsingy de Bemaraha',scene:'tsingy',votes:143},
+    {id:'p6',title:'Nuit étoilée sur le sud',place:'Grand Sud',scene:'nuit',votes:88},
+    {id:'p7',title:'Brume dans la forêt',place:'Parc de Ranomafana',scene:'foret',votes:112},
+    {id:'p8',title:'Marché haut en couleur',place:'Hautes Terres',scene:'marche',votes:76}
+  ];
+  var photos=BASE.map(function(p,i){return {id:p.id,title:p.title,place:p.place,src:scenes[p.scene](),votes:p.votes,order:i}});
+  var myVotes=store.get('mv-votes',[]);
+
+  function count(p){return p.votes+(myVotes.indexOf(p.id)>-1?1:0)}
+  function toggleVote(id){
+    var i=myVotes.indexOf(id);
+    if(i>-1)myVotes.splice(i,1);else myVotes.push(id);
+    store.set('mv-votes',myVotes);
+    renderGallery();
+    if(openId===id)syncLightbox();
+  }
+  var HEART='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.5-9.2C1.1 8.6 3 5.5 6.2 5.5c2 0 3.5 1.1 4.3 2.4h3C14.3 6.600 15.800 5.500 17.800 5.500c3.200 0 5.100 3.100 3.700 6.300C19.500 16.400 12 21 12 21z"/></svg>';
+  function voteBtn(p){
+    var b=el('button','vote');b.type='button';
+    var on=myVotes.indexOf(p.id)>-1;
+    b.setAttribute('aria-pressed',on?'true':'false');
+    b.setAttribute('aria-label',(on?'Retirer mon vote pour ':'Voter pour ')+p.title);
+    b.innerHTML=HEART;
+    b.appendChild(el('span',null,String(count(p))));
+    return b;
+  }
+
+  var grid=$('#grid'),leader=$('#leader'),sortSel=$('#sort');
+  function renderGallery(){
+    var list=photos.slice();
+    if(sortSel.value==='new')list.sort(function(a,b){return b.order-a.order});
+    else list.sort(function(a,b){return count(b)-count(a)||a.order-b.order});
+    grid.textContent='';
+    list.forEach(function(p){
+      var f=el('figure','card');
+      var t=el('button','thumb');t.type='button';
+      t.style.backgroundImage='url("'+p.src+'")';
+      t.setAttribute('aria-label','Voir en grand : '+p.title);
+      t.addEventListener('click',function(){openLb(p.id)});
+      var c=el('figcaption');
+      var txt=el('div');
+      txt.appendChild(el('div','t',p.title));
+      txt.appendChild(el('div','p',p.place));
+      var vb=voteBtn(p);vb.addEventListener('click',function(){toggleVote(p.id)});
+      c.appendChild(txt);c.appendChild(vb);
+      f.appendChild(t);f.appendChild(c);grid.appendChild(f);
+    });
+    var top=photos.slice().sort(function(a,b){return count(b)-count(a)||a.order-b.order})[0];
+    leader.textContent='';
+    var pic=el('button','pic');pic.type='button';
+    pic.style.backgroundImage='url("'+top.src+'")';
+    pic.setAttribute('aria-label','Voir en grand : '+top.title);
+    pic.addEventListener('click',function(){openLb(top.id)});
+    var info=el('div','info');
+    info.appendChild(el('span','kicker','En tête du classement'));
+    info.appendChild(el('h2',null,top.title));
+    info.appendChild(el('p','meta',top.place+' · '+count(top)+' votes'));
+    var vb2=voteBtn(top);vb2.style.alignSelf='flex-start';
+    vb2.addEventListener('click',function(){toggleVote(top.id)});
+    info.appendChild(vb2);
+    leader.appendChild(pic);leader.appendChild(info);
+  }
+  sortSel.addEventListener('change',renderGallery);
+
+  /* Lightbox */
+  var openId=null,lb=$('#lightbox');
+  function syncLightbox(){
+    var p=photos.filter(function(x){return x.id===openId})[0];if(!p)return;
+    $('#lbImg').src=p.src;$('#lbImg').alt=p.title+', '+p.place;
+    $('#lbCap').textContent=p.title+' · '+p.place;
+    var b=$('#lbVote'),on=myVotes.indexOf(p.id)>-1;
+    b.setAttribute('aria-pressed',on?'true':'false');
+    b.innerHTML=HEART;b.appendChild(el('span',null,String(count(p))));
+  }
+  function openLb(id){openId=id;syncLightbox();lb.hidden=false;$('#lbClose').focus()}
+  function closeLb(){lb.hidden=true;openId=null}
+  $('#lbClose').addEventListener('click',closeLb);
+  $('#lbVote').addEventListener('click',function(){if(openId)toggleVote(openId)});
+  lb.addEventListener('click',function(e){if(e.target===lb)closeLb()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!lb.hidden)closeLb()});
+
+  /* Upload */
+  $('#uploadBtn').addEventListener('click',function(){$('#upload').click()});
+  $('#upload').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){
+      var name=f.name.replace(/\.[^.]+$/,'').replace(/[-_]+/g,' ').slice(0,50)||'Ma photo';
+      photos.push({id:'u'+Date.now(),title:name,place:'Ajoutée par vous',src:String(r.result),votes:0,order:photos.length});
+      sortSel.value='new';renderGallery();
+    };
+    r.readAsDataURL(f);e.target.value='';
+  });
+
+  /* Sondages */
+  var polls=[
+    {id:'q1',q:'Quel plat malgache préférez-vous ?',opts:[['Romazava',210],['Ravitoto',168],['Vary amin’anana',95],['Koba',74]]},
+    {id:'q2',q:'Quelle région rêvez-vous de visiter ?',opts:[['Nosy Be',190],['Le Grand Sud',87],['Les Tsingy',152],['Les Hautes Terres',118]]},
+    {id:'q3',q:'Quel type de photo voulez-vous voir plus ?',opts:[['Paysages',240],['Vie quotidienne',163],['Animaux',201]]}
+  ];
+  var myPolls=store.get('mv-polls',{});
+  var pollBox=$('#polls');
+  function renderPolls(){
+    pollBox.textContent='';
+    polls.forEach(function(p){
+      var card=el('article','poll');
+      card.appendChild(el('h3',null,p.q));
+      var mine=myPolls[p.id];
+      var total=0;
+      p.opts.forEach(function(o,i){total+=o[1]+(mine===i?1:0)});
+      var box=el('div','opts');
+      p.opts.forEach(function(o,i){
+        if(mine==null){
+          var b=el('button','opt',o[0]);b.type='button';
+          b.addEventListener('click',function(){myPolls[p.id]=i;store.set('mv-polls',myPolls);renderPolls()});
+          box.appendChild(b);
+        }else{
+          var n=o[1]+(mine===i?1:0),pc=total?Math.round(n*100/total):0;
+          var r=el('div','res'+(mine===i?' mine':''));
+          var bar=el('div','bar');bar.style.width=pc+'%';
+          r.appendChild(bar);r.appendChild(el('span',null,o[0]));r.appendChild(el('span',null,pc+' %'));
+          box.appendChild(r);
+        }
+      });
+      card.appendChild(box);
+      card.appendChild(el('p','foot',total+' réponses'+(mine!=null?' · merci pour votre vote':'')));
+      pollBox.appendChild(card);
+    });
+  }
+  $('#pollForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var q=$('#pq').value.trim();
+    var o=$('#po').value.split('\n').map(function(s){return s.trim()}).filter(Boolean).slice(0,5);
+    var msg=$('#pollMsg');
+    if(!q||o.length<2){msg.textContent='Indiquez une question et au moins deux réponses, une par ligne.';return}
+    polls.unshift({id:'n'+Date.now(),q:q,opts:o.map(function(t){return [t,0]})});
+    $('#pq').value='';$('#po').value='';
+    msg.textContent='Sondage publié. Il apparaît en haut de la liste.';
+    renderPolls();
+  });
+
+  /* Plan de lancement */
+  var steps=[
+    ['Mettre le site en ligne','Un hébergement gratuit comme GitHub Pages ou Cloudflare Pages suffit pour démarrer.'],
+    ['Choisir un nom de domaine','Un nom court en .com ou .mg inspire plus confiance aux annonceurs.'],
+    ['Publier chaque semaine','Cinq nouvelles photos et un sondage par semaine donnent une raison de revenir.'],
+    ['Faire venir du public','Partagez les sondages dans les groupes Facebook et sur TikTok, y compris ceux de la diaspora.'],
+    ['Renseigner vos coordonnées sur le site','Nom de l’éditeur et contact dans les pages Confidentialité, Mentions légales et Sponsors.'],
+    ['Ouvrir un compte Payoneer et tester l’ajout de votre banque','Ajoutez votre compte bancaire local dans les paramètres et attendez la vérification, avant de proposer ce mode de paiement.'],
+    ['Regarder les modes de paiement de la régie publicitaire','Dans votre compte de régie, ouvrez la liste des modes de paiement disponibles pour votre adresse.'],
+    ['Demander une régie publicitaire','Faites la demande quand le site a du contenu régulier et des visites. Placez ensuite le fichier ads.txt demandé à la racine du site.'],
+    ['Vendre le premier sondage sponsorisé','Proposez à un hôtel ou une agence locale une question à poser à votre public, avec un devis généré ici.'],
+    ['Encaisser avant de publier','Faites payer le sponsor avant la mise en ligne, puis conservez le devis et la preuve de paiement.']
+  ];
+  var done=store.get('mv-steps',[]);
+  var ul=$('#steps');
+  steps.forEach(function(s,i){
+    var li=el('li');var lab=el('label');
+    var cb=document.createElement('input');cb.type='checkbox';cb.id='step'+i;cb.checked=done.indexOf(i)>-1;
+    cb.addEventListener('change',function(){
+      var k=done.indexOf(i);
+      if(cb.checked&&k<0)done.push(i);
+      if(!cb.checked&&k>-1)done.splice(k,1);
+      store.set('mv-steps',done);
+    });
+    var d=el('div');d.appendChild(el('strong',null,s[0]));d.appendChild(el('small',null,s[1]));
+    lab.appendChild(cb);lab.appendChild(d);li.appendChild(lab);ul.appendChild(li);
+  });
+
+  /* Coordonnées du site : à renseigner avant de partager le lien */
+  var CONFIG={owner:'Vestalys',contact:'vestalyseros@gmail.com'};
+  document.querySelectorAll('.contact-slot').forEach(function(n){n.textContent=CONFIG.contact||'coordonnées à renseigner par l’éditeur'});
+  document.querySelectorAll('.owner-slot').forEach(function(n){n.textContent=CONFIG.owner||'l’éditeur du site (nom à renseigner)'});
+  $('#contactLine').textContent=CONFIG.contact||'coordonnées à renseigner par l’éditeur';
+
+  /* Offres sponsors */
+  var OFFERS=[
+    {name:'Sondage sponsorisé',price:30,unit:'une semaine',items:['Votre question posée à tout le public','Résultats complets envoyés après la semaine']},
+    {name:'Bannière sur la galerie',price:40,unit:'par mois',items:['Emplacement 728 × 90 en haut de la galerie','Lien vers votre site']},
+    {name:'Concours photo parrainé',price:100,unit:'un mois',items:['Votre marque sur le concours et le prix','Mention dans chaque photo en tête']},
+    {name:'Pack visibilité',price:150,unit:'par mois',items:['Bannière, sondage et concours inclus','Un rapport de visites en fin de mois']}
+  ];
+  var offersBox=$('#offers');
+  OFFERS.forEach(function(o){
+    var c=el('div','src');
+    c.appendChild(el('span','tag',o.unit));
+    c.appendChild(el('h3',null,o.name));
+    var pr=el('div','offer-price','$'+o.price+' ');
+    pr.appendChild(el('small',null,'à partir de'));
+    c.appendChild(pr);
+    var ul2=el('ul');o.items.forEach(function(t){ul2.appendChild(el('li',null,t))});
+    c.appendChild(ul2);
+    offersBox.appendChild(c);
+  });
+  [$('#roffer'),$('#qoffer')].forEach(function(sel){
+    OFFERS.forEach(function(o,i){var op=el('option',null,o.name);op.value=String(i);sel.appendChild(op)});
+  });
+  $('#qprice').value=String(OFFERS[0].price);
+  $('#qoffer').addEventListener('change',function(){$('#qprice').value=String(OFFERS[+$('#qoffer').value].price)});
+
+  function copyFrom(area,msgEl){
+    var txt=area.value;
+    function fallback(){area.focus();area.select();msgEl.textContent='Texte sélectionné : copiez-le avec Ctrl+C ou en appui long.'}
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(function(){msgEl.textContent='Copié.'},fallback);
+      }else fallback();
+    }catch(e){fallback()}
+  }
+  $('#reqForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var o=OFFERS[+$('#roffer').value];
+    var t='Bonjour,\n\nJe représente '+$('#rname').value.trim()+' et je souhaite l’offre « '+o.name+' » (à partir de $'+o.price+', '+o.unit+') sur Goldchoice.\n\n'+($('#rmsg').value.trim()||'Pouvez-vous me proposer un devis ?')+'\n\nMerci de me répondre avec les modalités de paiement.';
+    $('#reqText').value=t;$('#reqOut').hidden=false;$('#reqCopyMsg').textContent='';
+  });
+  $('#reqCopy').addEventListener('click',function(){copyFrom($('#reqText'),$('#reqCopyMsg'))});
+
+  $('#quoteForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var o=OFFERS[+$('#qoffer').value];
+    var price=parseFloat($('#qprice').value.replace(',','.'));
+    var m=$('#quoteCopyMsg');
+    if(!isFinite(price)||price<=0){$('#quoteOut').hidden=false;$('#quoteText').value='Indiquez un prix valide.';m.textContent='';return}
+    var today=new Date();
+    var d=today.toLocaleDateString('fr-FR');
+    var ref='MV-'+today.getFullYear()+String(today.getMonth()+1).padStart(2,'0')+String(today.getDate()).padStart(2,'0')+'-'+String(Math.floor(Math.random()*900)+100);
+    var det=$('#qdet').value.trim();
+    var pay=$('#qpay').value;
+    var rate='';
+    if(pay.indexOf('MVola')===0){
+      rate='\nTaux de change : le montant ci-dessus est converti en ariary (MGA) au taux convenu avec le client le jour du paiement. Taux convenu : 1 '+$('#qcur').value+' = [à compléter] MGA.';
+    }
+    var t='DEVIS '+ref+'\nDate : '+d+'\nÉmetteur : '+(CONFIG.owner||'[votre nom]')+' (Goldchoice)\nClient : '+$('#qclient').value.trim()+'\n\nPrestation : '+o.name+' ('+o.unit+')\nMontant : '+price.toFixed(2)+' '+$('#qcur').value+'\n\nMode de paiement : '+$('#qpay').value+(det?'\nCoordonnées : '+det:'\nCoordonnées : [à compléter]')+rate+'\n\nConditions : paiement avant le début de la prestation. Les frais de transfert prélevés par la banque ou le service de paiement sont à la charge de l’émetteur du paiement, afin que le montant ci-dessus arrive en entier.\nValidité du devis : 15 jours.';
+    $('#quoteText').value=t;$('#quoteOut').hidden=false;m.textContent='';
+  });
+  $('#quoteCopy').addEventListener('click',function(){copyFrom($('#quoteText'),$('#quoteCopyMsg'))});
+
+  /* Navigation par hash */
+  var views=['galerie','sondages','sponsors','revenus','confidentialite','mentions'];
+  function show(){
+    var h=(location.hash||'').replace('#','');
+    if(views.indexOf(h)<0)h='galerie';
+    views.forEach(function(v){
+      $('#'+v).hidden=v!==h;
+      var a=$('[data-tab="'+v+'"]');
+      if(!a)return;
+      if(v===h)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+    });
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange',show);
+  renderGallery();renderPolls();show();
+})();
+</script>
+</body>
+</html>
